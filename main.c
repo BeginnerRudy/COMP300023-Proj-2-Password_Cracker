@@ -13,19 +13,18 @@ unsigned int* pwd_reader(char* filePath, int num_of_pwd);
 void pwd_printer(char* pwd);
 
 int main(int argc, char* argv[]){
-    // read pwd4sha256
+    /* read pwd4sha256*/
     pwd_reader(PWD4SHA256_PATH, NUM_OF_PWD4);
     pwd_reader(PWD6SHA256_PATH, NUM_OF_PWD6);
 
-    // print out pwd4sha256
+    /* use sha256 to generate hash*/
 
-    // use sha256 to generate hash
+    /* generate all combinations of 4*/
 
-    // generate all combinations of 4
+    /* make them into sha256*/
 
-    // make them into sha256
-
-    // start cracking
+    /* start cracking*/
+    // how to check equlity
     return 0;
 }
 
@@ -45,6 +44,8 @@ unsigned int* pwd_reader(char* filePath, int num_of_pwd){
     fclose (f);
     }
 
+
+    // print out the result
     if (buffer){
     #ifdef DEBUG
     int count = 1;
