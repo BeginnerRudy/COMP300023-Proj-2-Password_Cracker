@@ -1,3 +1,5 @@
+// #define DEBUG
+
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -13,18 +15,13 @@
 
 #define MAX_SIZE_OF_INT 64
 
-void process_download(const int sockfd, const char* file_name);
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
-void process_upload(const int sockfd, const char* file_name);
 
-long int hex_to_decimal(char hex);
-long int parse_two_hex_digits_to_integer(char* two_hex_digit);
-long int mod(long int a, long int b);
-long int exponential(long int base, long int exp);
-char* dh_first_calculator(long int g, long int p, long int b);
-char* dh_second_calculator(long int received, long int p, long int b);
-long int get_b();
+ int hex_to_decimal(char hex);
+ int parse_two_hex_digits_to_integer(char* two_hex_digit);
+char* dh_calculator( int g,  int p,  int b);
+ int get_b();
 
 
 
@@ -43,12 +40,14 @@ int main(int argc, char* argv[]) {
 	server = argv[1];
 
     // get b from stdin
-    long int b = get_b();
+     int b = get_b();
 
     // calculate g^b(mod p), g = 15, p = 97
-    long int g = 15, p = 97;
-    char* g_b_mod_p = dh_first_calculator(g, p, b);
+    int g = 15, p = 97;
+    char* g_b_mod_p = dh_calculator(g, p, b);
+    #ifdef DEBUG
     printf("%s\n", g_b_mod_p);
+    #endif
 
 
 
@@ -59,7 +58,9 @@ int main(int argc, char* argv[]) {
     		exit(EXIT_FAILURE);
     }
 
+    #ifdef DEBUG
     printf("Connect successful\n");
+    #endif
 
     char* username = "renjiem\n";
     int n = write(sockfd, username, strlen(username));
@@ -67,14 +68,18 @@ int main(int argc, char* argv[]) {
     		perror("write");
     		exit(EXIT_FAILURE);
     }
+    #ifdef DEBUG
     printf("Username send successful\n");
+    #endif
 
     n = write(sockfd, g_b_mod_p, strlen(g_b_mod_p));
 	if (n < 0) {
     		perror("write");
     		exit(EXIT_FAILURE);
     }
+    #ifdef DEBUG
     printf("g_b_mod_p send successful\n");
+    #endif
 
     /* Read initial message */
 	n = read(sockfd, buffer, 2047);
@@ -83,21 +88,27 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	buffer[n] = '\0';
+    #ifdef DEBUG
     printf("%s", buffer);
     printf("read successful\n");
+    #endif
 
 
     // calculate (g^b)^a(mod p), g = 15, p = 97
-    long int received = atoi(buffer);
-    printf("%ld\n", received);
+    int received = atoi(buffer);
+    #ifdef DEBUG
+    printf("%d\n", received);
+    #endif
 
-    char* received_b_mod_p = dh_second_calculator(received, p, b);
+    char* received_b_mod_p = dh_calculator(received, p, b);
     n = write(sockfd, received_b_mod_p, strlen(received_b_mod_p));
 	if (n < 0) {
     		perror("write");
     		exit(EXIT_FAILURE);
     }
+    #ifdef DEBUG
     printf("received_b_mod_p send successful\n");
+    #endif
 
     /* Read initial message */
 	n = read(sockfd, buffer, 2047);
@@ -106,27 +117,20 @@ int main(int argc, char* argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	buffer[n] = '\0';
+    #ifdef DEBUG
     printf("%s", buffer);
     printf("read successful\n");
+    #endif
 
 
 	/* Close to let server know that we've finished sending our message */
 	close(sockfd);
 
 
-    // printf("=====================================\n");
-    // printf("g = 2, b = 4, p = 11\n");
-    // printf("%s\n", dh_first_calculator(2, 11, 4));
-    // printf("correct answer 5\n");
-    //
-    // printf("=====================================\n");
-    // printf("g = 2, b = 9, p = 11\n");
-    // printf("%s\n", dh_first_calculator(2, 11, 9));
-    // printf("correct answer 6\n");
 
 }
 
-long int get_b(){
+ int get_b(){
     char* two_hex = (char*)malloc(2*sizeof(char));
     char hex_buff[10];
     printf("Enter b for Diffie-Hellman key exchange: ");
@@ -135,7 +139,7 @@ long int get_b(){
     return parse_two_hex_digits_to_integer(two_hex);
 }
 
-long int hex_to_decimal(char hex){
+ int hex_to_decimal(char hex){
     hex = tolower(hex);
     if (hex == '0'){
         return 0;
@@ -174,7 +178,7 @@ long int hex_to_decimal(char hex){
     }
 }
 
-long int parse_two_hex_digits_to_integer(char* two_hex_digit){
+ int parse_two_hex_digits_to_integer(char* two_hex_digit){
     if (strlen(two_hex_digit) != 2){
         perror("Please enter exactly 2 hex digits!!!");
         exit(EXIT_FAILURE);
@@ -184,152 +188,29 @@ long int parse_two_hex_digits_to_integer(char* two_hex_digit){
 
 }
 
-long int mod(long int a, long int b){
-    return a - (a/b)*b;
-}
+char* dh_calculator( int g,  int p,  int b){
+    /* reduce factor before multiplication */
+    // first reduce each g to g%p, and stores it in k
+    int k = g%p;
+    // z is the result of the multiplication of the first two terms
+    int z = k;
 
-long int exponential(long int base, long int exp){
-    long int result = 1;
-    for (int i = 0; i < exp; i++){
-        result *= base;
-    }
-    return result;
-}
-
-char* dh_first_calculator(long int g, long int p, long int b){
-    // g^b(mod p) = ((g mod p)^b)mod p
-    long int k = g%p;
-    long int z = k;
+    // keep reduce factor if there is more than one multiplication term
     while(b > 1){
-        printf("b = %ld\n", b);
         z = (z*k)%p;
         b--;
-        printf("%ld\n", z);
     }
 
-    long int result = z % p;
-    char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
-    sprintf(res, "%ld%c", result, '\n');
-    printf("-----------------------result------------------------\n");
-    return res;
-}
+    // do the final modular
+    int result = z % p;
 
-char* dh_second_calculator(long int received, long int p, long int b){
-    // (received)^b(mod p) = (received mod p)^b mod p
-    long int k = received%p;
-    long int z = k;
-    while(b > 1){
-        printf("b = %ld\n", b);
-        z = (z*k)%p;
-        b--;
-        printf("%ld\n", z);
-    }
-
-    long int result = z % p;
+    // Convert int to char
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
-    sprintf(res, "%ld%c", result, '\n');
-    printf("-----------------------result------------------------\n");
+    sprintf(res, "%d%c", result, '\n');
     return res;
 }
 
 
-/* Handles DOWNLOAD command */
-void process_download(const int sockfd, const char* file_name) {
-	int filefd;
-	char buffer[2048];
-	int n;
-
-	/* Send download command to server */
-	sprintf(buffer, "DOWNLOAD %s", file_name);
-	n = write(sockfd, buffer, strlen(buffer));
-	if (n < 0) {
-		perror("write");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Read initial message */
-	n = read(sockfd, buffer, 2047);
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-	buffer[n] = '\0';
-
-	/* Take action depending on server response */
-	if (strncmp(buffer, "NOT-FOUND", 9) == 0) {
-		fprintf(stderr, "Server could not find %s\n", file_name);
-		return;
-	} else if (strncmp(buffer, "OK ", 3) == 0) {
-		/* Open file for writing */
-		filefd = open(file_name, O_WRONLY | O_CREAT, 0600);
-
-		/* Write initial buffer contents */
-		n = write(filefd, buffer + 3, n - 3);
-		if (n < 0) {
-			perror("write");
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		fprintf(stderr, "Wrong response from server, ignoring\n");
-		return;
-	}
-
-	// Read from socket until whole file is received
-	while (1) {
-		n = read(sockfd, buffer, 2048);
-		if (n == 0) {
-			break;
-		}
-		if (n < 0) {
-			perror("read");
-			exit(EXIT_FAILURE);
-		}
-
-		n = write(filefd, buffer, n);
-		if (n < 0) {
-			perror("write");
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	printf("Received file %s\n", file_name);
-}
-
-/* Handles UPLOAD command */
-void process_upload(const int sockfd, const char* file_name) {
-	int filefd;
-	int n, re;
-	char buffer[2048];
-
-	if (access(file_name, F_OK) != -1) {
-		/* Open file */
-		filefd = open(file_name, O_RDONLY);
-		if (!filefd) {
-			perror("open");
-			exit(EXIT_FAILURE);
-		}
-
-		/* Write "UPLOAD " and file name */
-		n = sprintf(buffer, "UPLOAD %s ", file_name);
-		n = write(sockfd, buffer, n);
-		if (n < 0) {
-			perror("write");
-			exit(EXIT_FAILURE);
-		}
-
-		/* Send file contents */
-		re = 0;
-		do {
-			re = sendfile(sockfd, filefd, NULL, 2048);
-		} while (re > 0);
-		if (re < 0) {
-			perror("ERROR sending file");
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		fprintf(stderr, "File not found\n");
-	}
-}
 
 /* Create and return a socket bound to the given port and server */
 int setup_client_socket(const int port, const char* server_name,
