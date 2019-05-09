@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define MAX_SIZE_OF_INT 10
+
 void process_download(const int sockfd, const char* file_name);
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
@@ -18,8 +20,10 @@ void process_upload(const int sockfd, const char* file_name);
 
 int hex_to_decimal(char hex);
 int parse_two_hex_digits_to_integer(char* two_hex_digit);
+int mod(int a, int b);
 char* dh_first_calculator(int g, int p, int b);
 char* dh_second_calculator(int g, int p, int b, int a);
+int get_b();
 
 
 
@@ -37,41 +41,47 @@ int main(int argc, char* argv[]) {
 	port = atoi(argv[2]);
 	server = argv[1];
 
+    // get b from stdin
+    int b = get_b();
 
+    // calculate g^b(mod p), g = 15, p = 97
+    int g = 15, p = 97;
+    char* g_b_mod_p = dh_first_calculator(g, p, b);
+
+    printf("%d\n", mod(216, 55));
+    // inr to char*
+    // char b_char[MAX_SIZE_OF_INT];
+    // sprintf(b_char, "%d", b);
+    // printf("%s\n", b_char);
+
+
+
+	// /* Make connection */
+	// sockfd = setup_client_socket(port, server, &serv_addr);
+	// if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
+    // 		perror("connect");
+    // 		exit(EXIT_FAILURE);
+    // }
+    //
+    // int n = write(sockfd, b, n);
+	// if (n < 0) {
+    // 		perror("write");
+    // 		exit(EXIT_FAILURE);
+    // }
+    //
+    //
+	// /* Close to let server know that we've finished sending our message */
+	// close(sockfd);
+
+}
+
+int get_b(){
     char* two_hex = (char*)malloc(2*sizeof(char));
     char hex_buff[10];
     printf("Enter b for Diffie-Hellman key exchange: ");
     gets(hex_buff);
     sscanf(hex_buff, "%s", two_hex);
-    printf("%d\n", parse_two_hex_digits_to_integer(two_hex));
-
-	// while (1) {
-	// 	/* Make connection */
-	// 	sockfd = setup_client_socket(port, server, &serv_addr);
-	// 	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) <
-	// 		0) {
-	// 		perror("connect");
-	// 		exit(EXIT_FAILURE);
-	// 	}
-    //
-    //
-	// 	/* Note: fgets stores \0 */
-	// 	printf("Enter b for Diffie-Hellman key exchange: ");
-    //     char* two_hex = (char*)malloc(2*sizeof(char));
-    //     scanf("%s\n", two_hex);
-    //     printf("%d\n", parse_two_hex_digits_to_integer(two_hex));
-    //
-    //
-    //     // int n = write(sockfd, b, n);
-	// 	// if (n < 0) {
-	// 	// 	perror("write");
-	// 	// 	exit(EXIT_FAILURE);
-	// 	// }
-    //
-    //
-	// 	/* Close to let server know that we've finished sending our message */
-	// 	close(sockfd);
-	// }
+    return parse_two_hex_digits_to_integer(two_hex);
 }
 
 int hex_to_decimal(char hex){
@@ -123,7 +133,17 @@ int parse_two_hex_digits_to_integer(char* two_hex_digit){
 
 }
 
+int mod(int a, int b){
+    int factor = 1;
+    while(b*factor < a){
+        factor++;
+    }
+    return a - b*(factor-1);
+}
+
 char* dh_first_calculator(int g, int p, int b){
+    // g^b(mod p) = ((g mod p)^b)mod p
+    int result = 'a';
     return NULL;
 }
 char* dh_second_calculator(int g, int p, int b, int a){
