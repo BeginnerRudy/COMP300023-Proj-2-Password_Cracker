@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     		exit(EXIT_FAILURE);
     }
 
-    printf("Connect successful\ n");
+    printf("Connect successful\n");
 
     char* username = "renjiem\n";
     int n = write(sockfd, username, strlen(username));
@@ -187,18 +187,53 @@ long int exponential(long int base, long int exp){
 
 char* dh_first_calculator(long int g, long int p, long int b){
     // g^b(mod p) = ((g mod p)^b)mod p
-    long int result = 1;
-    
+    long int k = g;
+    if (b%2 == 0){
+        while(b/2 > 0){
+            k = exponential(k%p, 2);
+            b /=2;
+            printf("%ld\n", k);
+        }
+    }else{
+        int n = b - 1;
+        while(n/2 > 0){
+            k = exponential(k%p, 2);
+            n /=2;
+            printf("%ld\n", k);
+        }
+        k = (k)*(g%p);
+        printf("%ld\n", k);
+    }
 
+    long int result = k % p;
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
-    printf("%d\n", exponential(mod(g, p), b));
+    printf("%ld\n", result);
     sprintf(res, "%ld%c", result, '\n');
+    printf("%s\n", res);
     return res;
 }
 
 char* dh_second_calculator(long int received, long int p, long int b){
     // (received)^b(mod p) = (received mod p)^b mod p
-    long int result = mod(exponential(mod(received, p), b), p);
+    long int k = received;
+    if (b%2 == 0){
+        while(b/2 > 0){
+            k = exponential(k%p, 2);
+            b /=2;
+            printf("%ld\n", k);
+        }
+    }else{
+        int n = b - 1;
+        while(n/2 > 0){
+            k = exponential(k%p, 2);
+            n /=2;
+            printf("%ld\n", k);
+        }
+        k = (k)*(received%p);
+        printf("%ld\n", k);
+    }
+
+    long int result = k % p;
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
     sprintf(res, "%ld%c", result, '\n');
     return res;
