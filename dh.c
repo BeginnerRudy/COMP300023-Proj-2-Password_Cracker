@@ -21,6 +21,7 @@ void process_upload(const int sockfd, const char* file_name);
 int hex_to_decimal(char hex);
 int parse_two_hex_digits_to_integer(char* two_hex_digit);
 int mod(int a, int b);
+int exponential(int base, int exp);
 char* dh_first_calculator(int g, int p, int b);
 char* dh_second_calculator(int g, int p, int b, int a);
 int get_b();
@@ -48,7 +49,7 @@ int main(int argc, char* argv[]) {
     int g = 15, p = 97;
     char* g_b_mod_p = dh_first_calculator(g, p, b);
 
-    printf("%d\n", mod(216, 55));
+    printf("%d\n", exponential(2, 12));
     // inr to char*
     // char b_char[MAX_SIZE_OF_INT];
     // sprintf(b_char, "%d", b);
@@ -139,6 +140,14 @@ int mod(int a, int b){
         factor++;
     }
     return a - b*(factor-1);
+}
+
+int exponential(int base, int exp){
+    int result = 1;
+    for (int i = 0; i < exp; i++){
+        result *= base;
+    }
+    return result;
 }
 
 char* dh_first_calculator(int g, int p, int b){
