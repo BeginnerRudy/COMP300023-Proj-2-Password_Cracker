@@ -1,0 +1,257 @@
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <ctype.h>
+#include <sys/sendfile.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+void process_download(const int sockfd, const char* file_name);
+int setup_client_socket(const int port, const char* server_name,
+						struct sockaddr_in* serv_addr);
+void process_upload(const int sockfd, const char* file_name);
+
+int hex_to_decimal(char hex);
+int parse_two_hex_digits_to_integer(char* two_hex_digit);
+char* dh_first_calculator(int g, int p, int b);
+char* dh_second_calculator(int g, int p, int b, int a);
+
+
+
+int main(int argc, char* argv[]) {
+	struct sockaddr_in serv_addr;
+	char* server;
+	int port;
+	int sockfd;
+	char buffer[256];
+
+	if (argc < 3) {
+		fprintf(stderr, "usage: %s hostname port\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	port = atoi(argv[2]);
+	server = argv[1];
+
+
+    char* two_hex = (char*)malloc(2*sizeof(char));
+    char hex_buff[10];
+    printf("Enter b for Diffie-Hellman key exchange: ");
+    gets(hex_buff);
+    sscanf(hex_buff, "%s", two_hex);
+    printf("%d\n", parse_two_hex_digits_to_integer(two_hex));
+
+	// while (1) {
+	// 	/* Make connection */
+	// 	sockfd = setup_client_socket(port, server, &serv_addr);
+	// 	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) <
+	// 		0) {
+	// 		perror("connect");
+	// 		exit(EXIT_FAILURE);
+	// 	}
+    //
+    //
+	// 	/* Note: fgets stores \0 */
+	// 	printf("Enter b for Diffie-Hellman key exchange: ");
+    //     char* two_hex = (char*)malloc(2*sizeof(char));
+    //     scanf("%s\n", two_hex);
+    //     printf("%d\n", parse_two_hex_digits_to_integer(two_hex));
+    //
+    //
+    //     // int n = write(sockfd, b, n);
+	// 	// if (n < 0) {
+	// 	// 	perror("write");
+	// 	// 	exit(EXIT_FAILURE);
+	// 	// }
+    //
+    //
+	// 	/* Close to let server know that we've finished sending our message */
+	// 	close(sockfd);
+	// }
+}
+
+int hex_to_decimal(char hex){
+    hex = tolower(hex);
+    if (hex == '0'){
+        return 0;
+    }else if (hex == '1'){
+        return 1;
+    }else if (hex == '2'){
+        return 2;
+    }else if (hex == '3'){
+        return 3;
+    }else if (hex == '4'){
+        return 4;
+    }else if (hex == '5'){
+        return 5;
+    }else if (hex == '6'){
+        return 6;
+    }else if (hex == '7'){
+        return 7;
+    }else if (hex == '8'){
+        return 8;
+    }else if (hex == '9'){
+        return 9;
+    }else if (hex == 'a'){
+        return 10;
+    }else if (hex == 'b'){
+        return 11;
+    }else if (hex == 'c'){
+        return 12;
+    }else if (hex == 'd'){
+        return 13;
+    }else if (hex == 'e'){
+        return 14;
+    }else if (hex == 'f'){
+        return 15;
+    }else{
+        return -99999;
+    }
+}
+
+int parse_two_hex_digits_to_integer(char* two_hex_digit){
+    if (strlen(two_hex_digit) != 2){
+        perror("Please enter exactly 2 hex digits!!!");
+        exit(EXIT_FAILURE);
+    }
+
+    return 16*hex_to_decimal(two_hex_digit[0]) + hex_to_decimal(two_hex_digit[1]);
+
+}
+
+char* dh_first_calculator(int g, int p, int b){
+    return NULL;
+}
+char* dh_second_calculator(int g, int p, int b, int a){
+    return NULL;
+}
+
+
+/* Handles DOWNLOAD command */
+void process_download(const int sockfd, const char* file_name) {
+	int filefd;
+	char buffer[2048];
+	int n;
+
+	/* Send download command to server */
+	sprintf(buffer, "DOWNLOAD %s", file_name);
+	n = write(sockfd, buffer, strlen(buffer));
+	if (n < 0) {
+		perror("write");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Read initial message */
+	n = read(sockfd, buffer, 2047);
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+	buffer[n] = '\0';
+
+	/* Take action depending on server response */
+	if (strncmp(buffer, "NOT-FOUND", 9) == 0) {
+		fprintf(stderr, "Server could not find %s\n", file_name);
+		return;
+	} else if (strncmp(buffer, "OK ", 3) == 0) {
+		/* Open file for writing */
+		filefd = open(file_name, O_WRONLY | O_CREAT, 0600);
+
+		/* Write initial buffer contents */
+		n = write(filefd, buffer + 3, n - 3);
+		if (n < 0) {
+			perror("write");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		fprintf(stderr, "Wrong response from server, ignoring\n");
+		return;
+	}
+
+	// Read from socket until whole file is received
+	while (1) {
+		n = read(sockfd, buffer, 2048);
+		if (n == 0) {
+			break;
+		}
+		if (n < 0) {
+			perror("read");
+			exit(EXIT_FAILURE);
+		}
+
+		n = write(filefd, buffer, n);
+		if (n < 0) {
+			perror("write");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	printf("Received file %s\n", file_name);
+}
+
+/* Handles UPLOAD command */
+void process_upload(const int sockfd, const char* file_name) {
+	int filefd;
+	int n, re;
+	char buffer[2048];
+
+	if (access(file_name, F_OK) != -1) {
+		/* Open file */
+		filefd = open(file_name, O_RDONLY);
+		if (!filefd) {
+			perror("open");
+			exit(EXIT_FAILURE);
+		}
+
+		/* Write "UPLOAD " and file name */
+		n = sprintf(buffer, "UPLOAD %s ", file_name);
+		n = write(sockfd, buffer, n);
+		if (n < 0) {
+			perror("write");
+			exit(EXIT_FAILURE);
+		}
+
+		/* Send file contents */
+		re = 0;
+		do {
+			re = sendfile(sockfd, filefd, NULL, 2048);
+		} while (re > 0);
+		if (re < 0) {
+			perror("ERROR sending file");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		fprintf(stderr, "File not found\n");
+	}
+}
+
+/* Create and return a socket bound to the given port and server */
+int setup_client_socket(const int port, const char* server_name,
+						struct sockaddr_in* serv_addr) {
+	int sockfd;
+	struct hostent* server;
+
+	server = gethostbyname(server_name);
+	if (!server) {
+		fprintf(stderr, "ERROR, no such host\n");
+		exit(EXIT_FAILURE);
+	}
+	bzero((char*)serv_addr, sizeof(serv_addr));
+	serv_addr->sin_family = AF_INET;
+	bcopy(server->h_addr_list[0], (char*)&serv_addr->sin_addr.s_addr,
+		  server->h_length);
+	serv_addr->sin_port = htons(port);
+
+	/* Create socket */
+	sockfd = socket(PF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0) {
+		perror("socket");
+		exit(EXIT_FAILURE);
+	}
+
+	return sockfd;
+}
