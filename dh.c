@@ -113,6 +113,17 @@ int main(int argc, char* argv[]) {
 	/* Close to let server know that we've finished sending our message */
 	close(sockfd);
 
+
+    // printf("=====================================\n");
+    // printf("g = 2, b = 4, p = 11\n");
+    // printf("%s\n", dh_first_calculator(2, 11, 4));
+    // printf("correct answer 5\n");
+    //
+    // printf("=====================================\n");
+    // printf("g = 2, b = 9, p = 11\n");
+    // printf("%s\n", dh_first_calculator(2, 11, 9));
+    // printf("correct answer 6\n");
+
 }
 
 long int get_b(){
@@ -187,55 +198,37 @@ long int exponential(long int base, long int exp){
 
 char* dh_first_calculator(long int g, long int p, long int b){
     // g^b(mod p) = ((g mod p)^b)mod p
-    long int k = g;
-    if (b%2 == 0){
-        while(b/2 > 0){
-            k = exponential(k%p, 2);
-            b /=2;
-            printf("%ld\n", k);
-        }
-    }else{
-        int n = b - 1;
-        while(n/2 > 0){
-            k = exponential(k%p, 2);
-            n /=2;
-            printf("%ld\n", k);
-        }
-        k = (k)*(g%p);
-        printf("%ld\n", k);
+    long int k = g%p;
+    long int z = k;
+    while(b > 1){
+        printf("b = %ld\n", b);
+        z = (z*k)%p;
+        b--;
+        printf("%ld\n", z);
     }
 
-    long int result = k % p;
+    long int result = z % p;
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
-    printf("%ld\n", result);
     sprintf(res, "%ld%c", result, '\n');
-    printf("%s\n", res);
+    printf("-----------------------result------------------------\n");
     return res;
 }
 
 char* dh_second_calculator(long int received, long int p, long int b){
     // (received)^b(mod p) = (received mod p)^b mod p
-    long int k = received;
-    if (b%2 == 0){
-        while(b/2 > 0){
-            k = exponential(k%p, 2);
-            b /=2;
-            printf("%ld\n", k);
-        }
-    }else{
-        int n = b - 1;
-        while(n/2 > 0){
-            k = exponential(k%p, 2);
-            n /=2;
-            printf("%ld\n", k);
-        }
-        k = (k)*(received%p);
-        printf("%ld\n", k);
+    long int k = received%p;
+    long int z = k;
+    while(b > 1){
+        printf("b = %ld\n", b);
+        z = (z*k)%p;
+        b--;
+        printf("%ld\n", z);
     }
 
-    long int result = k % p;
+    long int result = z % p;
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
     sprintf(res, "%ld%c", result, '\n');
+    printf("-----------------------result------------------------\n");
     return res;
 }
 
