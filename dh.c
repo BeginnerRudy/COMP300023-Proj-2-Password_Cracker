@@ -11,20 +11,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define MAX_SIZE_OF_INT 10
+#define MAX_SIZE_OF_INT 64
 
 void process_download(const int sockfd, const char* file_name);
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
 void process_upload(const int sockfd, const char* file_name);
 
-int hex_to_decimal(char hex);
-int parse_two_hex_digits_to_integer(char* two_hex_digit);
-int mod(int a, int b);
-int exponential(int base, int exp);
-char* dh_first_calculator(int g, int p, int b);
-char* dh_second_calculator(int g, int p, int b, int a);
-int get_b();
+long int hex_to_decimal(char hex);
+long int parse_two_hex_digits_to_integer(char* two_hex_digit);
+long int mod(long int a, long int b);
+long int exponential(long int base, long int exp);
+char* dh_first_calculator(long int g, long int p, long int b);
+char* dh_second_calculator(long int g, long int p, long int b, long int a);
+long int get_b();
 
 
 
@@ -43,13 +43,13 @@ int main(int argc, char* argv[]) {
 	server = argv[1];
 
     // get b from stdin
-    int b = get_b();
+    long int b = get_b();
 
     // calculate g^b(mod p), g = 15, p = 97
-    int g = 15, p = 97;
+    long int g = 15, p = 97;
+
     char* g_b_mod_p = dh_first_calculator(g, p, b);
 
-    printf("%d\n", exponential(2, 12));
     // inr to char*
     // char b_char[MAX_SIZE_OF_INT];
     // sprintf(b_char, "%d", b);
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
 }
 
-int get_b(){
+long int get_b(){
     char* two_hex = (char*)malloc(2*sizeof(char));
     char hex_buff[10];
     printf("Enter b for Diffie-Hellman key exchange: ");
@@ -85,7 +85,7 @@ int get_b(){
     return parse_two_hex_digits_to_integer(two_hex);
 }
 
-int hex_to_decimal(char hex){
+long int hex_to_decimal(char hex){
     hex = tolower(hex);
     if (hex == '0'){
         return 0;
@@ -124,7 +124,7 @@ int hex_to_decimal(char hex){
     }
 }
 
-int parse_two_hex_digits_to_integer(char* two_hex_digit){
+long int parse_two_hex_digits_to_integer(char* two_hex_digit){
     if (strlen(two_hex_digit) != 2){
         perror("Please enter exactly 2 hex digits!!!");
         exit(EXIT_FAILURE);
@@ -134,28 +134,26 @@ int parse_two_hex_digits_to_integer(char* two_hex_digit){
 
 }
 
-int mod(int a, int b){
-    int factor = 1;
-    while(b*factor < a){
-        factor++;
-    }
-    return a - b*(factor-1);
+long int mod(long int a, long int b){
+    return a - (a/b)*b;
 }
 
-int exponential(int base, int exp){
-    int result = 1;
+long int exponential(long int base, long int exp){
+    long int result = 1;
     for (int i = 0; i < exp; i++){
         result *= base;
     }
     return result;
 }
 
-char* dh_first_calculator(int g, int p, int b){
+char* dh_first_calculator(long int g, long int p, long int b){
     // g^b(mod p) = ((g mod p)^b)mod p
-    int result = 'a';
-    return NULL;
+    long int result = mod(exponential(mod(g, p), b), p);
+    char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
+    sprintf(res, "%ld", result);
+    return res;
 }
-char* dh_second_calculator(int g, int p, int b, int a){
+char* dh_second_calculator(long int g, long int p, long int b, long int a){
     return NULL;
 }
 
