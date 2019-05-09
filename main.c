@@ -6,12 +6,16 @@
 #define PWD4SHA256_PATH "./pwd4sha256"
 #define PWD6SHA256_PATH "./pwd6sha256"
 
-unsigned int* pwd_reader(char* filePath);
+#define NUM_OF_PWD4 10
+#define NUM_OF_PWD6 20
+
+unsigned int* pwd_reader(char* filePath, int num_of_pwd);
 void pwd_printer(char* pwd);
 
 int main(int argc, char* argv[]){
     // read pwd4sha256
-    pwd_reader(PWD4SHA256_PATH);
+    pwd_reader(PWD4SHA256_PATH, NUM_OF_PWD4);
+    pwd_reader(PWD6SHA256_PATH, NUM_OF_PWD6);
 
     // print out pwd4sha256
 
@@ -25,7 +29,7 @@ int main(int argc, char* argv[]){
     return 0;
 }
 
-unsigned int* pwd_reader(char* filePath){
+unsigned int* pwd_reader(char* filePath, int num_of_pwd){
     unsigned int * buffer = 0;
     long length;
     FILE * f = fopen (filePath, "rb");
@@ -44,8 +48,11 @@ unsigned int* pwd_reader(char* filePath){
     if (buffer){
     #ifdef DEBUG
     int count = 1;
-    for (int i = 0; i < 80; i+=8){
-        printf("sha256 of word %2d :     ", count++);
+    if (num_of_pwd == NUM_OF_PWD6){
+        count = 11;
+    }
+    for (int i = 0; i < 8*num_of_pwd; i+=8){
+        printf("sha256(pwd%3d) :    ", count++);
         for (int j = 0; j < 8; j++){
             printf("%x", buffer[i+j]);
         }
