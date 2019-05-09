@@ -23,15 +23,15 @@ long int parse_two_hex_digits_to_integer(char* two_hex_digit);
 long int mod(long int a, long int b);
 long int exponential(long int base, long int exp);
 char* dh_first_calculator(long int g, long int p, long int b);
-char* dh_second_calculator(long int g, long int p, long int b, long int a);
+char* dh_second_calculator(long int received, long int p, long int b);
 long int get_b();
 
 
 
 int main(int argc, char* argv[]) {
 	struct sockaddr_in serv_addr;
-	char* server;
-	int port;
+	char* server = "172.26.37.44";
+	int port = 7800;
 	int sockfd;
 	char buffer[256];
 
@@ -47,32 +47,71 @@ int main(int argc, char* argv[]) {
 
     // calculate g^b(mod p), g = 15, p = 97
     long int g = 15, p = 97;
-
     char* g_b_mod_p = dh_first_calculator(g, p, b);
-
-    // inr to char*
-    // char b_char[MAX_SIZE_OF_INT];
-    // sprintf(b_char, "%d", b);
-    // printf("%s\n", b_char);
+    printf("%s\n", g_b_mod_p);
 
 
 
-	// /* Make connection */
-	// sockfd = setup_client_socket(port, server, &serv_addr);
-	// if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
-    // 		perror("connect");
-    // 		exit(EXIT_FAILURE);
-    // }
-    //
-    // int n = write(sockfd, b, n);
-	// if (n < 0) {
-    // 		perror("write");
-    // 		exit(EXIT_FAILURE);
-    // }
-    //
-    //
-	// /* Close to let server know that we've finished sending our message */
-	// close(sockfd);
+	/* Make connection */
+	sockfd = setup_client_socket(port, server, &serv_addr);
+	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
+    		perror("connect");
+    		exit(EXIT_FAILURE);
+    }
+
+    printf("Connect successful\ n");
+
+    char* username = "renjiem\n";
+    int n = write(sockfd, username, strlen(username));
+	if (n < 0) {
+    		perror("write");
+    		exit(EXIT_FAILURE);
+    }
+    printf("Username send successful\n");
+
+    n = write(sockfd, g_b_mod_p, strlen(g_b_mod_p));
+	if (n < 0) {
+    		perror("write");
+    		exit(EXIT_FAILURE);
+    }
+    printf("g_b_mod_p send successful\n");
+
+    /* Read initial message */
+	n = read(sockfd, buffer, 2047);
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+	buffer[n] = '\0';
+    printf("%s", buffer);
+    printf("read successful\n");
+
+
+    // calculate (g^b)^a(mod p), g = 15, p = 97
+    long int received = atoi(buffer);
+    printf("%ld\n", received);
+
+    char* received_b_mod_p = dh_second_calculator(received, p, b);
+    n = write(sockfd, received_b_mod_p, strlen(received_b_mod_p));
+	if (n < 0) {
+    		perror("write");
+    		exit(EXIT_FAILURE);
+    }
+    printf("received_b_mod_p send successful\n");
+
+    /* Read initial message */
+	n = read(sockfd, buffer, 2047);
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+	buffer[n] = '\0';
+    printf("%s", buffer);
+    printf("read successful\n");
+
+
+	/* Close to let server know that we've finished sending our message */
+	close(sockfd);
 
 }
 
@@ -148,13 +187,21 @@ long int exponential(long int base, long int exp){
 
 char* dh_first_calculator(long int g, long int p, long int b){
     // g^b(mod p) = ((g mod p)^b)mod p
-    long int result = mod(exponential(mod(g, p), b), p);
+    long int result = 1;
+    
+
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
-    sprintf(res, "%ld", result);
+    printf("%d\n", exponential(mod(g, p), b));
+    sprintf(res, "%ld%c", result, '\n');
     return res;
 }
-char* dh_second_calculator(long int g, long int p, long int b, long int a){
-    return NULL;
+
+char* dh_second_calculator(long int received, long int p, long int b){
+    // (received)^b(mod p) = (received mod p)^b mod p
+    long int result = mod(exponential(mod(received, p), b), p);
+    char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
+    sprintf(res, "%ld%c", result, '\n');
+    return res;
 }
 
 
