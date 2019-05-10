@@ -32,71 +32,82 @@ int main(int argc, char* argv[]){
     // BYTE** pwd4sha256 = pwd_reader(PWD4SHA256_PATH, NUM_OF_PWD4);
     BYTE** pwd6sha256 = pwd_reader(PWD6SHA256_PATH, NUM_OF_PWD6);
 
-    /* use sha256 to generate hash*/
+    if (argc == 3){
+        char* guesses_filepath = argv[1];
+        char* pwdNsha256_filepath = argv[2];
+        printf("%d arguments\n", argc);
+    }else if (argc == 1){
+        /* use sha256 to generate hash*/
 
-    // FILE * fp;
-    // char * line = NULL;
-    // size_t len = 0;
-    // ssize_t read;
-    //
-    // fp = fopen(argv[1], "r");
-    // if (fp == NULL){
-    //     exit(EXIT_FAILURE);
-    // }
-    // while ((read = getline(&line, &len, fp)) != -1) {
-    //     printf("%s", line);
-    // }
-    //
-    // fclose(fp);
-    // if (line){
-    //     free(line);
-    // }
-    // exit(EXIT_SUCCESS);
-
-
-    // char word[4];
-    // for (int i = ASCII_START; i <= ASCII_END; i++){
-        //     word[0] = i;
-        //     for (int j = ASCII_START; j <= ASCII_END; j++){
-            //         word[1] = j;
-            //         for (int k = ASCII_START; k <= ASCII_END; k++){
-                //             word[2] = k;
-                //             for (int p = ASCII_START; p <= ASCII_END; p++){
-                    //                 word[3] = p;
-                    //                 char* res = is_cracked(pwd4sha256, NUM_OF_PWD4, &word);
-                    //             }
-                    //         }
-                    //     }
+        // FILE * fp;
+        // char * line = NULL;
+        // size_t len = 0;
+        // ssize_t read;
+        //
+        // fp = fopen(argv[1], "r");
+        // if (fp == NULL){
+            //     exit(EXIT_FAILURE);
+            // }
+            // while ((read = getline(&line, &len, fp)) != -1) {
+                //     printf("%s", line);
+                // }
+                //
+                // fclose(fp);
+                // if (line){
+                    //     free(line);
                     // }
-    char word[6];
-    for (int i = ASCII_START; i <= ASCII_END; i++){
-        word[0] = i;
-        for (int j = ASCII_START; j <= ASCII_END; j++){
-            word[1] = j;
-            for (int k = ASCII_START; k <= ASCII_END; k++){
-                word[2] = k;
-                for (int p = ASCII_START; p <= ASCII_END; p++){
-                    word[3] = p;
-                    for (int q = ASCII_START; q <= ASCII_END; q++){
-                        word[4] = q;
-                        for (int z = ASCII_START; z<= ASCII_END; z++){
-                            word[5] = z;
-                            char* res = is_cracked(pwd6sha256, NUM_OF_PWD6, &word);
-                        }
-                    }
-                }
-            }
-        }
+                    // exit(EXIT_SUCCESS);
+
+
+                    // char* word = (char*)malloc(4*sizeof(char));
+                    // for (int i = ASCII_START; i <= ASCII_END; i++){
+                        //     word[0] = i;
+                        //     for (int j = ASCII_START; j <= ASCII_END; j++){
+                            //         word[1] = j;
+                            //         for (int k = ASCII_START; k <= ASCII_END; k++){
+                                //             word[2] = k;
+                                //             for (int p = ASCII_START; p <= ASCII_END; p++){
+                                    //                 word[3] = p;
+                                    //                 char* res = is_cracked(pwd4sha256, NUM_OF_PWD4, word);
+                                    //             }
+                                    //         }
+                                    //     }
+                                    // }
+                                    char* word = (char*)malloc(6*sizeof(char));
+                                    for (int i = ASCII_START; i <= ASCII_END; i++){
+                                        word[0] = i;
+                                        for (int j = ASCII_START; j <= ASCII_END; j++){
+                                            word[1] = j;
+                                            for (int k = ASCII_START; k <= ASCII_END; k++){
+                                                word[2] = k;
+                                                for (int p = ASCII_START; p <= ASCII_END; p++){
+                                                    word[3] = p;
+                                                    for (int q = ASCII_START; q <= ASCII_END; q++){
+                                                        word[4] = q;
+                                                        for (int z = ASCII_START; z<= ASCII_END; z++){
+                                                            word[5] = z;
+                                                            is_cracked(pwd6sha256, NUM_OF_PWD6, word);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // char* res = is_cracked(pwd6sha256, NUM_OF_PWD6, "renjie");
+
+                                    /* generate all combinations of 4*/
+
+                                    /* make them into sha256*/
+
+                                    /* start cracking*/
+                                    // how to check equlity
+
+    }else if(argc == 2){
+        int total_num_guesses = atoi(argv[1]);
+        printf("%d arguments\n", argc);
     }
 
-    // char* res = is_cracked(pwd6sha256, NUM_OF_PWD6, "renjie");
-
-    /* generate all combinations of 4*/
-
-    /* make them into sha256*/
-
-    /* start cracking*/
-    // how to check equlity
     return 0;
 }
 
