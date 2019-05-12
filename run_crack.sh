@@ -1,3 +1,3 @@
 make
-./crack 
+./crack
 # echo -n foobar | sha256sum

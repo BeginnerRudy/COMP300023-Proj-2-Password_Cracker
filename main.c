@@ -16,8 +16,11 @@
 
 
 // #define ASCII_START 32 + 65
-#define ASCII_START 32
+// #define ASCII_START 32
+#define ASCII_START 32 + 16
 #define ASCII_END 126
+#define GUSS "s"
+
 
 typedef struct{
     BYTE** pwd_sha256_list;
@@ -55,31 +58,33 @@ int main(int argc, char* argv[]){
                 }
             }
         }
+
         // then, hack 6 char pwd
-        // char* word6 = (char*)malloc(6*sizeof(char));
-        // word6[6] = '\0'; // terminate at 7th char
-        // for (int i = ASCII_START; i <= ASCII_END; i++){
-        //     word6[0] = i;
-        //     for (int j = ASCII_START; j <= ASCII_END; j++){
-        //         word6[1] = j;
-        //         for (int k = ASCII_START; k <= ASCII_END; k++){
-        //             word6[2] = k;
-        //             for (int p = ASCII_START; p <= ASCII_END; p++){
-        //                 word6[3] = p;
-        //                 for (int q = ASCII_START; q <= ASCII_END; q++){
-        //                     word6[4] = q;
-        //                     for (int z = ASCII_START; z<= ASCII_END; z++){
-        //                         word6[5] = z;
-        //                         is_cracked(pwd6sha256, word6);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        char* word6 = (char*)malloc(6*sizeof(char));
+        word6[6] = '\0'; // terminate at 7th char
+        for (int i = ASCII_START; i <= ASCII_END; i++){
+            word6[0] = i;
+            for (int j = ASCII_START; j <= ASCII_END; j++){
+                word6[1] = j;
+                for (int k = ASCII_START; k <= ASCII_END; k++){
+                    word6[2] = k;
+                    for (int p = ASCII_START; p <= ASCII_END; p++){
+                        word6[3] = p;
+                        for (int q = ASCII_START; q <= ASCII_END; q++){
+                            word6[4] = q;
+                            for (int z = ASCII_START; z<= ASCII_END; z++){
+                                word6[5] = z;
+                                is_cracked(pwd6sha256, word6);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
     }else if(argc == 2){
         int total_num_guesses = atoi(argv[1]);
+        int curr_guess_count = 0;
         printf("%d arguments\n", argc);
     }else if (argc == 3){
         char* guesses_filepath = argv[1];
@@ -87,10 +92,31 @@ int main(int argc, char* argv[]){
 
         // read pwdNsha256 file into 2D array of BYTES
         pwd_sha256_t* pwdNsha256 = pwd_reader(pwdNsha256_filepath);
-        // read guess file
-        // take out one guess
-        // hash it to SHA256
-        // compare with pwdNsha256
+        // read the guess file and get the file length
+
+        FILE * fp;
+        char * word = NULL;
+        size_t len = 0;
+        ssize_t read;
+
+        fp = fopen(guesses_filepath, "r");
+        if (fp == NULL){
+            exit(EXIT_FAILURE);
+        }
+        while ((read = getline(&word, &len, fp)) != -1) {
+            // printf("%s\n", is_cracked(pwdNsha256, word));
+            is_cracked(pwdNsha256, word);
+            // printf("%s\n", word);
+        }
+
+        fclose(fp);
+        if (word){
+            free(word);
+        }
+        exit(EXIT_SUCCESS);
+
+
+
         // result
         printf("%d arguments\n", argc);
     }
