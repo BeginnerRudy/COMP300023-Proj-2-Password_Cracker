@@ -104,9 +104,10 @@ int main(int argc, char* argv[]){
             exit(EXIT_FAILURE);
         }
         while ((read = getline(&word, &len, fp)) != -1) {
-            // printf("%s\n", is_cracked(pwdNsha256, word));
+            // Terminate the line by adding null byte
+            word[strlen(word) - 1] = '\0';
             is_cracked(pwdNsha256, word);
-            // printf("%s\n", word);
+            // printf("%s the length is %ld\n", word, strlen(word));
         }
 
         fclose(fp);
