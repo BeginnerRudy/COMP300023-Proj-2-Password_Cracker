@@ -1,4 +1,4 @@
-// #define DEBUG
+#define DEBUG
 
 #include <fcntl.h>
 #include <netdb.h>
@@ -32,12 +32,6 @@ int main(int argc, char* argv[]) {
 	int sockfd;
 	char buffer[256];
 
-	if (argc < 3) {
-		fprintf(stderr, "usage: %s hostname port\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	port = atoi(argv[2]);
-	server = argv[1];
 
     // get b from stdin
      int b = get_b();
