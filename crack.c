@@ -1,4 +1,9 @@
-#define DEBUG
+/*********************************************************************
+ *			COMP30023 Computer Systems - Assignment 2				 *
+ *					Author: Renjie(Rudy) Meng						 *
+ *						Date: 23th May 2019							 *
+ *																	 *
+ *********************************************************************/
 
 /*************************** HEADER FILES ***************************/
 #include <stdio.h>
@@ -12,6 +17,7 @@
 #define PWD6SHA256_PATH "./pwd6sha256"
 
 
+#define DEBUG
 #define ASCII_START 32 + 16
 #define ASCII_END 126
 #define GUSS "s"

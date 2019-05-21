@@ -1,5 +1,11 @@
-#define DEBUG
+/*********************************************************************
+ *			COMP30023 Computer Systems - Assignment 2				 *
+ *					Author: Renjie(Rudy) Meng						 *
+ *						Date: 23th May 2019							 *
+ *																	 *
+ *********************************************************************/
 
+/*************************** HEADER FILES ***************************/
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -13,36 +19,26 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/****************************** MACROS ******************************/
+#define DEBUG
 #define MAX_SIZE_OF_INT 64
 
+/*********************** FUNCTION PROTOTYPES ***********************/
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
-
- int hex_to_decimal(char hex);
- int parse_two_hex_digits_to_integer(char* two_hex_digit);
+int hex_to_decimal(char hex);
+int parse_two_hex_digits_to_integer(char* two_hex_digit);
 char* dh_calculator( int g,  int p,  int b);
- int get_b();
 
 
-
+/*********************** FUNCTION DEFINITIONS ***********************/
 int main(int argc, char* argv[]) {
+	/*Decalre and initialize variables for connection*/
 	struct sockaddr_in serv_addr;
 	char* server = "172.26.37.44";
 	int port = 7800;
 	int sockfd;
 	char buffer[256];
-
-
-    // get b from stdin
-     int b = get_b();
-
-    // calculate g^b(mod p), g = 15, p = 97
-    int g = 15, p = 97;
-    char* g_b_mod_p = dh_calculator(g, p, b);
-    #ifdef DEBUG
-    printf("%s\n", g_b_mod_p);
-    #endif
-
 
 
 	/* Make connection */
@@ -53,9 +49,10 @@ int main(int argc, char* argv[]) {
     }
 
     #ifdef DEBUG
-    printf("Connect successful\n");
+    printf("Connect the server successfully\n");
     #endif
 
+	/*send my username to server*/
     char* username = "renjiem\n";
     int n = write(sockfd, username, strlen(username));
 	if (n < 0) {
@@ -63,19 +60,31 @@ int main(int argc, char* argv[]) {
     		exit(EXIT_FAILURE);
     }
     #ifdef DEBUG
-    printf("Username send successful\n");
+    printf("Username: renjiem send successful\n");
     #endif
 
+	/* get b(decimal) from command line argument*/
+	int b = atoi(argv[1]);
+	printf("b = (decimal) %d. \n", b);
+
+	/* calculate g^b(mod p), g = 15, p = 97*/
+	int g = 15, p = 97;
+	char* g_b_mod_p = dh_calculator(g, p, b);
+	#ifdef DEBUG
+	printf("g^b mod p = %s", g_b_mod_p);
+	#endif
+	// send the result
     n = write(sockfd, g_b_mod_p, strlen(g_b_mod_p));
 	if (n < 0) {
     		perror("write");
     		exit(EXIT_FAILURE);
     }
     #ifdef DEBUG
-    printf("g_b_mod_p send successful\n");
+	printf("client send: ");
+    printf("%s", g_b_mod_p);
     #endif
 
-    /* Read initial message */
+    /* Read initial message, that is the result that the server wish to exchange */
 	n = read(sockfd, buffer, 2047);
 	if (n < 0) {
 		perror("read");
@@ -83,28 +92,26 @@ int main(int argc, char* argv[]) {
 	}
 	buffer[n] = '\0';
     #ifdef DEBUG
-    printf("%s", buffer);
-    printf("read successful\n");
+    printf("read from server: %s", buffer);
     #endif
 
 
-    // calculate (g^b)^a(mod p), g = 15, p = 97
+    /* calculate (g^b)^a(mod p), g = 15, p = 97 */
     int received = atoi(buffer);
-    #ifdef DEBUG
-    printf("%d\n", received);
-    #endif
-
     char* received_b_mod_p = dh_calculator(received, p, b);
+
+
     n = write(sockfd, received_b_mod_p, strlen(received_b_mod_p));
 	if (n < 0) {
     		perror("write");
     		exit(EXIT_FAILURE);
     }
     #ifdef DEBUG
-    printf("received_b_mod_p send successful\n");
+	printf("client send: ");
+    printf("%s", received_b_mod_p);
     #endif
 
-    /* Read initial message */
+    /* Read message, to see whether dh is successful */
 	n = read(sockfd, buffer, 2047);
 	if (n < 0) {
 		perror("read");
@@ -112,29 +119,19 @@ int main(int argc, char* argv[]) {
 	}
 	buffer[n] = '\0';
     #ifdef DEBUG
-    printf("%s", buffer);
-    printf("read successful\n");
+    printf("read from server: %s", buffer);
     #endif
 
 
 	/* Close to let server know that we've finished sending our message */
 	close(sockfd);
-
-
-
 }
 
- int get_b(){
-    char* two_hex = (char*)malloc(2*sizeof(char));
-    char hex_buff[10];
-    printf("Enter b for Diffie-Hellman key exchange: ");
-    gets(hex_buff);
-    sscanf(hex_buff, "%s", two_hex);
-    return parse_two_hex_digits_to_integer(two_hex);
-}
-
- int hex_to_decimal(char hex){
+//This function is used to convert hex number to decimal number
+int hex_to_decimal(char hex){
+	// first convert hex to lowercase
     hex = tolower(hex);
+	// map hex to its decimal reppresentation
     if (hex == '0'){
         return 0;
     }else if (hex == '1'){
@@ -167,11 +164,13 @@ int main(int argc, char* argv[]) {
         return 14;
     }else if (hex == 'f'){
         return 15;
+		// if it is invalid assign it to -99999 to indicates
     }else{
         return -99999;
     }
 }
 
+// Thi funcion is used to convert 2 hex digits into a decimal representation
  int parse_two_hex_digits_to_integer(char* two_hex_digit){
     if (strlen(two_hex_digit) != 2){
         perror("Please enter exactly 2 hex digits!!!");
@@ -182,6 +181,7 @@ int main(int argc, char* argv[]) {
 
 }
 
+// This function is responsible for calculating dh result
 char* dh_calculator( int g,  int p,  int b){
     /* reduce factor before multiplication */
     // first reduce each g to g%p, and stores it in k
@@ -200,6 +200,7 @@ char* dh_calculator( int g,  int p,  int b){
 
     // Convert int to char
     char* res = (char*)malloc(MAX_SIZE_OF_INT*sizeof(char));
+	// add a new line char to it, since it is the requirenment from the spec
     sprintf(res, "%d%c", result, '\n');
     return res;
 }
@@ -209,14 +210,18 @@ char* dh_calculator( int g,  int p,  int b){
 /* Create and return a socket bound to the given port and server */
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr) {
+	// delcare vars
 	int sockfd;
 	struct hostent* server;
 
+	// get server
 	server = gethostbyname(server_name);
 	if (!server) {
 		fprintf(stderr, "ERROR, no such host\n");
 		exit(EXIT_FAILURE);
 	}
+
+	// assign address
 	bzero((char*)serv_addr, sizeof(serv_addr));
 	serv_addr->sin_family = AF_INET;
 	bcopy(server->h_addr_list[0], (char*)&serv_addr->sin_addr.s_addr,
