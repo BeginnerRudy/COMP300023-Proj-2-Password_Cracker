@@ -22,10 +22,12 @@
 /****************************** MACROS ******************************/
 #define DEBUG
 #define MAX_SIZE_OF_INT 64
-
+#define BUFFER_SIZE 2048
 /*********************** FUNCTION PROTOTYPES ***********************/
 int setup_client_socket(const int port, const char* server_name,
 						struct sockaddr_in* serv_addr);
+void send_data(int sockfd, char* data);
+void read_data(int sockfd, char* buffer, int buffer_size);
 int hex_to_decimal(char hex);
 int parse_two_hex_digits_to_integer(char* two_hex_digit);
 char* dh_calculator( int g,  int p,  int b);
@@ -38,7 +40,7 @@ int main(int argc, char* argv[]) {
 	char* server = "172.26.37.44";
 	int port = 7800;
 	int sockfd;
-	char buffer[256];
+	char* buffer = (char*)malloc(BUFFER_SIZE*sizeof(char));
 
 
 	/* Make connection */
@@ -54,11 +56,7 @@ int main(int argc, char* argv[]) {
 
 	/*send my username to server*/
     char* username = "renjiem\n";
-    int n = write(sockfd, username, strlen(username));
-	if (n < 0) {
-    		perror("write");
-    		exit(EXIT_FAILURE);
-    }
+    send_data(sockfd, username);
     #ifdef DEBUG
     printf("Username: renjiem send successful\n");
     #endif
@@ -74,23 +72,14 @@ int main(int argc, char* argv[]) {
 	printf("g^b mod p = %s", g_b_mod_p);
 	#endif
 	// send the result
-    n = write(sockfd, g_b_mod_p, strlen(g_b_mod_p));
-	if (n < 0) {
-    		perror("write");
-    		exit(EXIT_FAILURE);
-    }
+	send_data(sockfd, g_b_mod_p);
     #ifdef DEBUG
 	printf("client send: ");
     printf("%s", g_b_mod_p);
     #endif
 
     /* Read initial message, that is the result that the server wish to exchange */
-	n = read(sockfd, buffer, 2047);
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-	buffer[n] = '\0';
+	read_data(sockfd, buffer, BUFFER_SIZE);
     #ifdef DEBUG
     printf("read from server: %s", buffer);
     #endif
@@ -100,24 +89,14 @@ int main(int argc, char* argv[]) {
     int received = atoi(buffer);
     char* received_b_mod_p = dh_calculator(received, p, b);
 
-
-    n = write(sockfd, received_b_mod_p, strlen(received_b_mod_p));
-	if (n < 0) {
-    		perror("write");
-    		exit(EXIT_FAILURE);
-    }
+	send_data(sockfd, received_b_mod_p);
     #ifdef DEBUG
 	printf("client send: ");
     printf("%s", received_b_mod_p);
     #endif
 
     /* Read message, to see whether dh is successful */
-	n = read(sockfd, buffer, 2047);
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-	buffer[n] = '\0';
+	read_data(sockfd, buffer, BUFFER_SIZE);
     #ifdef DEBUG
     printf("read from server: %s", buffer);
     #endif
@@ -127,6 +106,24 @@ int main(int argc, char* argv[]) {
 	close(sockfd);
 }
 
+// This function is repsonsible for sending data to the server
+void send_data(int sockfd, char* data){
+	int n = write(sockfd, data, strlen(data));
+	if (n < 0) {
+    		perror("write");
+    		exit(EXIT_FAILURE);
+    }
+}
+
+// This function is responsible for reading data from the server
+void read_data(int sockfd, char* buffer, int buffer_size){
+	int n = read(sockfd, buffer, buffer_size);
+	if (n < 0) {
+		perror("read");
+		exit(EXIT_FAILURE);
+	}
+	buffer[n] = '\0';
+}
 //This function is used to convert hex number to decimal number
 int hex_to_decimal(char hex){
 	// first convert hex to lowercase
