@@ -96,6 +96,8 @@ void crack_no_arg(){
 */
 void crack_1_arg(int total_num_guesses){
     int curr_guess_count = 0;
+
+    //generate 6-char guess
     printf("total_num_guesses %d\n", total_num_guesses);
 }
 
