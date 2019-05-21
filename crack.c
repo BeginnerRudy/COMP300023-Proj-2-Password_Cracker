@@ -104,7 +104,7 @@ void crack_1_arg(int total_num_guesses){
 /*This function implements when there is 2 arguments passed through.
  The 1st argument is guess word file path and 2nd argument is the pwd sha256 file
 */
-void crack_2_args(char* guesses_filepath, char* pwdNmisha256_filepath){
+void crack_2_args(char* guesses_filepath, char* pwdNsha256_filepath){
     // read pwdNsha256 file into 2D array of BYTES
     pwd_sha256_t* pwdNsha256 = pwd_reader(pwdNsha256_filepath);
     // read the guess file and get the file length
