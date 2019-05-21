@@ -2,11 +2,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "sha256.h"
+#include "sha256_utility.h"
 
 /****************************** MACROS ******************************/
-#define SIZE_OF_SHA256 32 // The number of bytes need for a SHA256
+#define GUESS_FAILED "F"
+
+typedef struct{
+    BYTE** pwd_sha256_list;
+    int pwd_count;
+}pwd_sha256_t;
 
 /*********************** FUNCTION PROTOTYPES ***********************/
-BYTE* str_to_sha_256(char* str);
-void print_hash(BYTE* hash);
+pwd_sha256_t* pwd_reader(char* filePath);
+char* is_cracked(pwd_sha256_t* pwdNsha256, char* guess);

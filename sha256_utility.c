@@ -17,3 +17,11 @@ BYTE* str_to_sha_256(char* str){
 
     return hash;
 }
+
+/*This is the helper function used to print out hash value stored in BYTE*/
+void print_hash(BYTE* hash){
+    for (int i = 0; i < SIZE_OF_SHA256; i ++){
+        printf("%02x", hash[i]);
+    }
+    printf("-\n");
+}

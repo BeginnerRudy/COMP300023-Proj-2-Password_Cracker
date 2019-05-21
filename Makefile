@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 
 EXE = crack
-OBJ = main.o sha256.o sha256_utility.o
+OBJ = main.o sha256.o sha256_utility.o pwd_utility.o
 
 
 $(EXE): $(OBJ)
@@ -14,6 +14,9 @@ sha256.o: sha256.c sha256.h
 
 sha256_utility.o: sha256_utility.c sha256_utility.h
 	$(CC) $(CFLAGS) -c sha256_utility.c
+
+pwd_utility.o: pwd_utility.c pwd_utility.h
+	$(CC) $(CFLAGS) -c pwd_utility.c
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c
