@@ -25,6 +25,7 @@
 #define GUSS "s"
 #define TO_UPPER_PROB 0.07
 
+// This is the cummulative density function table, which would be used in good guess
 #define _e 0.095388
 #define _a 0.088034 + _e
 #define _r 0.067375 + _a
@@ -187,9 +188,9 @@ void checking(char* guesses_filepath, char* pwdNsha256_filepath){
     }
 }
 
-/*This function is responsible for picking 
- a char based on the given num, this num 
- has a value between 0 and 1, which plays 
+/*This function is responsible for picking
+ a char based on the given num, this num
+ has a value between 0 and 1, which plays
  a role as probability
  @param: num => the probability in [0, 1]
 */
@@ -275,7 +276,7 @@ char pick_char(double num){
     }
 }
 
-/*This function is responsible for convert given 
+/*This function is responsible for convert given
  lower case char to upper case at predefined probability
  @param: character => the char given for converting
 */
@@ -312,7 +313,7 @@ char choose_from_special(){
     return '\\';
 }
 
-/*This function is responsible for generate pwd of given length 
+/*This function is responsible for generate pwd of given length
 	based on predefined distribution
  @param: int len_of_pwd => specified length of a pwd
 */

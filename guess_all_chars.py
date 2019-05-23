@@ -17,11 +17,12 @@ for pwd in pwds:
         total_num_char += 1
 
 # calculate the probability
+new_dict = {}
 freq_list = []
 for key, value in list(freqency_dict.items()):
-    value /= total_num_char
+    new_dict[key] = value/total_num_char
 
-for key, value in list(freqency_dict.items()):
+for key, value in list(new_dict.items()):
     freq_list.append([key, value])
 
 freq_list.sort(key = lambda x:x[1], reverse = True)
@@ -30,4 +31,3 @@ print("symbol prob")
 for i in list(range(len(freq_list) - 1)):
     print(str(freq_list[i][0]) + "     : " + str(freq_list[i][1]))
 common_pwd.close()
-
